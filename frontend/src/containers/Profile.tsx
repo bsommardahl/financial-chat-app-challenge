@@ -1,8 +1,25 @@
-import { Container } from "@material-ui/core";
 import React from "react";
+import {
+  Container,
+  createStyles,
+  makeStyles,
+  Theme,
+  Typography,
+} from "@material-ui/core";
 import { useFirebase } from "../services/AuthService/Firebase";
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: { minHeight: "90vh" },
+    title: {
+      marginTop: 30,
+      marginBottom: 30,
+    },
+  })
+);
+
 const Profile = () => {
+  const classes = useStyles();
   const { loading, user } = useFirebase();
 
   if (loading || !user) {
@@ -10,9 +27,11 @@ const Profile = () => {
   }
 
   return (
-    <Container>
-      <h2>Profile</h2>
-      <h4>Email: {user.email}</h4>
+    <Container fixed maxWidth="md" className={classes.root}>
+      <Typography variant="h3" className={classes.title}>
+        Profile
+      </Typography>
+      <Typography variant="h5">Email: {user.email}</Typography>
     </Container>
   );
 };
