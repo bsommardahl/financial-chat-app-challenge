@@ -5,6 +5,7 @@ import Home from "./containers/Home";
 import Profile from "./containers/Profile";
 import NotFound from "./containers/NotFound";
 import SignIn from "./containers/SignIn";
+import Room from "./containers/Room";
 import { useFirebase } from "./services/AuthService/Firebase";
 
 const Routes = () => {
@@ -15,6 +16,7 @@ const Routes = () => {
       <Route exact path="/sign-in" component={SignIn} />
       <PrivateRoute exact path="/" component={Home} />
       <PrivateRoute exact path="/profile" component={Profile} />
+      <PrivateRoute exact path="/rooms/:roomName" component={Room} />
       <Route component={NotFound} />
     </Switch>
   );
