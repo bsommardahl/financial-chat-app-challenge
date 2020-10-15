@@ -10,6 +10,7 @@ import {
 import { Router } from "react-router";
 import history from "./history";
 import Routes from "./Routes";
+import Navbar from "./components/Navbar";
 
 const App = () => {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -26,6 +27,9 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <header>
+        <Navbar />
+      </header>
       <Container>
         <Router history={history}>
           <Routes />
