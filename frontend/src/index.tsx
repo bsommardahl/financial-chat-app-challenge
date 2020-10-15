@@ -5,11 +5,19 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
 import store from "./store";
+import {
+  FirebaseContext,
+  FirebaseProvider,
+} from "./services/AuthService/Firebase";
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <FirebaseProvider>
+        <FirebaseContext.Consumer>
+          {(props) => !props?.loading && <App />}
+        </FirebaseContext.Consumer>
+      </FirebaseProvider>
     </Provider>
   </React.StrictMode>,
   document.getElementById("root")
