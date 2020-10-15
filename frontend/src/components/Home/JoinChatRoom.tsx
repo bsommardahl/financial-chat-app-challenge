@@ -35,6 +35,14 @@ const JoinChatRoom = () => {
   const classes = useStyles();
   const history = useHistory();
   const [chatRoom, setChatRoom] = useState("");
+
+  const goToRoom = () => history.push(`/rooms/${chatRoom}`);
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    goToRoom();
+  };
+
   return (
     <Card className={classes.root} variant="outlined">
       <CardContent>
@@ -45,7 +53,7 @@ const JoinChatRoom = () => {
         >
           Join a Chat Room
         </Typography>
-        <form autoComplete="off" className={classes.form}>
+        <form autoComplete="off" className={classes.form} onSubmit={onSubmit}>
           <TextField
             id="room-name"
             label="Room Name"
@@ -61,7 +69,7 @@ const JoinChatRoom = () => {
           size="medium"
           variant="contained"
           color="primary"
-          onClick={() => history.push(`/rooms/${chatRoom}`)}
+          onClick={goToRoom}
         >
           Join
         </Button>

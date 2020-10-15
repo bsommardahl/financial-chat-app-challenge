@@ -1,7 +1,6 @@
 import React from "react";
 import "./App.css";
 import {
-  Container,
   createMuiTheme,
   CssBaseline,
   ThemeProvider,
@@ -30,11 +29,9 @@ const App = () => {
       <header>
         <Navbar />
       </header>
-      <Container>
-        <Router history={history}>
-          <Routes />
-        </Router>
-      </Container>
+      <Router history={history}>
+        <Routes />
+      </Router>
       <footer style={{ textAlign: "center" }}>
         ©{new Date().getFullYear()} | Created by Renan Zelaya
       </footer>
