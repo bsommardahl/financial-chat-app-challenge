@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import {
   Container,
@@ -7,6 +7,7 @@ import {
   Theme,
   Typography,
 } from "@material-ui/core";
+import socketIOClient from "socket.io-client";
 import RoomSidebar from "../components/Room/Sidebar";
 import RoomMessages from "../components/Room/Messages";
 import MessageInput from "../components/Room/MessageInput";
@@ -35,10 +36,36 @@ const useStyles = makeStyles((theme: Theme) =>
 const Room = () => {
   const classes = useStyles();
   const { roomName } = useParams<{ roomName: string }>();
+  const [, setSocket] = useState<SocketIOClient.Socket | null>(null);
 
   const sendMessage = (message: string) => {
     console.log("message", message);
   };
+
+  useEffect(() => {
+    const client = socketIOClient(process.env.REACT_APP_BACKEND_URL!);
+    setSocket(client);
+    client.on("connect", () => {
+      console.log("Connected");
+
+      client.emit("hello", {
+        roomName,
+      });
+    });
+    client.on("exception", (data: any) => {
+      console.log("event", data);
+    });
+    client.on("answer-hello", (data: any) => {
+      console.log("answer-hello", data);
+    });
+    client.on("disconnect", () => {
+      console.log("Disconnected");
+    });
+
+    return () => {
+      client.disconnect();
+    };
+  }, [roomName]);
 
   return (
     <div className={classes.root}>
