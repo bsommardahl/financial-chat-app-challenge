@@ -19,6 +19,7 @@ interface FirebaseContext {
   user: firebase.User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<firebase.auth.UserCredential>;
 }
 
 export const FirebaseContext = React.createContext<null | FirebaseContext>(
@@ -64,6 +65,11 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
 
   const signOut = () => auth!.signOut();
 
+  const signInWithGoogle = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    return auth!.signInWithPopup(provider);
+  };
+
   return (
     <FirebaseContext.Provider
       value={{
@@ -71,6 +77,7 @@ export const FirebaseProvider = ({ children }: FirebaseProviderProps) => {
         user,
         isAuthenticated,
         signOut,
+        signInWithGoogle,
       }}
     >
       {children}
