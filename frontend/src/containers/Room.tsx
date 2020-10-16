@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import {
   Container,
@@ -11,6 +11,8 @@ import socketIOClient from "socket.io-client";
 import RoomSidebar from "../components/Room/Sidebar";
 import RoomMessages from "../components/Room/Messages";
 import MessageInput from "../components/Room/MessageInput";
+import { useFirebase } from "../services/AuthService/Firebase";
+import { RoomData } from "../types/RoomData";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,7 +37,20 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Room = () => {
   const classes = useStyles();
+  const { user } = useFirebase();
   const { roomName } = useParams<{ roomName: string }>();
+  const [roomData, setRoomData] = useState<RoomData>({
+    roomName,
+    messages: [],
+    users: [],
+  });
+  const basicInformation = useMemo(
+    () => ({
+      roomName,
+      username: user?.email,
+    }),
+    [roomName, user]
+  );
   const [, setSocket] = useState<SocketIOClient.Socket | null>(null);
 
   const sendMessage = (message: string) => {
@@ -48,24 +63,22 @@ const Room = () => {
     client.on("connect", () => {
       console.log("Connected");
 
-      client.emit("hello", {
-        roomName,
-      });
+      client.emit("user-connected", basicInformation);
     });
     client.on("exception", (data: any) => {
-      console.log("event", data);
-    });
-    client.on("answer-hello", (data: any) => {
-      console.log("answer-hello", data);
+      console.log("Exception", data);
     });
     client.on("disconnect", () => {
       console.log("Disconnected");
+    });
+    client.on("room-data", (data: RoomData) => {
+      setRoomData(data);
     });
 
     return () => {
       client.disconnect();
     };
-  }, [roomName]);
+  }, [basicInformation]);
 
   return (
     <div className={classes.root}>
