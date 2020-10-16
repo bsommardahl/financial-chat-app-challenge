@@ -56,8 +56,19 @@ export class RoomService {
     return this.makeData(roomName, room);
   }
 
-  addNewMessage({ message, roomName, username }: NewMessage) {
+  addNewMessage(
+    { message, roomName, username }: NewMessage,
+    addStockMessage = false,
+    stockCode = '',
+  ) {
     const room = this.getRoom(roomName);
+    if (addStockMessage) {
+      room.messages.push({
+        createdAt: new Date(),
+        message: `Handling stock code: '${stockCode}'`,
+        username: 'Admin',
+      });
+    }
     room.messages.push({ createdAt: new Date(), message, username });
 
     return this.makeData(roomName, room);
