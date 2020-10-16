@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import ChatMessage from "./Message";
 import { Message } from "../../../types/Message";
@@ -22,11 +22,16 @@ interface Props {
 const RoomMessages = ({ messages }: Props) => {
   const classes = useStyles();
 
+  useEffect(() => {
+    document.getElementById(`message-${messages.length - 1}`)?.scrollIntoView();
+  });
+
   return (
     <div className={classes.messages}>
       {messages.map(({ createdAt, message, username }, idx) => (
         <ChatMessage
           key={idx}
+          id={`message-${idx}`}
           date={createdAt}
           message={message}
           sender={username}

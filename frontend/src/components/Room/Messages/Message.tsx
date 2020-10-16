@@ -20,12 +20,13 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface Props {
+  id?: string;
   sender: string;
   date: Date;
   message: string;
 }
 
-const ChatMessage = ({ date, message, sender }: Props) => {
+const ChatMessage = ({ date, message, sender, id }: Props) => {
   const classes = useStyles();
   const formattedTime = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
@@ -34,7 +35,7 @@ const ChatMessage = ({ date, message, sender }: Props) => {
   }).format(new Date(date));
 
   return (
-    <div className={classes.root}>
+    <div className={classes.root} id={id}>
       <Typography className={classes.meta}>
         <span className={classes.sender}>{sender}</span>
         <span className={classes.time}>{formattedTime}</span>
