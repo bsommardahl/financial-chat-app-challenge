@@ -15,6 +15,10 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       flexGrow: 1,
     },
+    link: {
+      textDecoration: "none",
+      color: "white",
+    },
   })
 );
 
@@ -25,7 +29,9 @@ const Navbar = () => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" className={classes.title}>
-          Financial Chat App
+          <a href="/" className={classes.link}>
+            Financial Chat App
+          </a>
         </Typography>
         {isAuthenticated && (
           <Button color="inherit" onClick={() => signOut()}>
