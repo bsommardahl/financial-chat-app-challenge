@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../../entities/User.entity';
 import { Room } from '../../entities/Room.entity';
+import { NewMessage } from './dtos/NewMessage.dto';
+
+const RETURN_FIRST_N_MESSAGES = 50;
 
 @Injectable()
 export class RoomService {
@@ -34,11 +37,7 @@ export class RoomService {
       createdAt: new Date(),
     });
 
-    const usersInRoom = this.users.filter(user => user.roomName === roomName);
-    return {
-      ...room,
-      users: usersInRoom,
-    };
+    return this.makeData(roomName, room);
   }
 
   disconnectUser(socketId: string): Room {
@@ -54,11 +53,14 @@ export class RoomService {
 
     this.users = this.users.filter(user => user.socketId !== socketId);
 
-    const usersInRoom = this.users.filter(user => user.roomName === roomName);
-    return {
-      ...room,
-      users: usersInRoom,
-    };
+    return this.makeData(roomName, room);
+  }
+
+  addNewMessage({ message, roomName, username }: NewMessage) {
+    const room = this.getRoom(roomName);
+    room.messages.push({ createdAt: new Date(), message, username });
+
+    return this.makeData(roomName, room);
   }
 
   getRoomData(roomName: string): Room {
@@ -72,9 +74,22 @@ export class RoomService {
       users: [],
     };
   }
+
   private getRoom(roomName: string): Room {
     if (!this.rooms[roomName])
       this.rooms[roomName] = this.getDefaultRoom(roomName);
     return this.rooms[roomName];
+  }
+
+  private makeData(roomName: string, room: Room): Room {
+    const usersInRoom = this.users.filter(user => user.roomName === roomName);
+    const sortedMessages = room.messages.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    );
+    return {
+      ...room,
+      messages: sortedMessages.slice(0, RETURN_FIRST_N_MESSAGES).reverse(),
+      users: usersInRoom,
+    };
   }
 }

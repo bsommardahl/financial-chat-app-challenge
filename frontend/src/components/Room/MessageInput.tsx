@@ -30,6 +30,7 @@ const MessageInput = ({ onSubmit: doSubmit }: Props) => {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     doSubmit(message);
+    setMessage("");
   };
 
   return (

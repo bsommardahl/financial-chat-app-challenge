@@ -51,10 +51,10 @@ const Room = () => {
     }),
     [roomName, user]
   );
-  const [, setSocket] = useState<SocketIOClient.Socket | null>(null);
+  const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
 
   const sendMessage = (message: string) => {
-    console.log("message", message);
+    socket?.emit("new-message", { message, ...basicInformation });
   };
 
   useEffect(() => {

@@ -55,4 +55,14 @@ export class RoomGateway implements OnGatewayDisconnect {
     client.broadcast.to(roomName).emit(event, data);
     return { event, data };
   }
+
+  @SubscribeMessage('new-message')
+  handleNewMessage(@MessageBody() newMessagePayload: NewMessage): void {
+    console.log('Message received', newMessagePayload);
+
+    const data = this.roomService.addNewMessage(newMessagePayload);
+    const event = 'room-data';
+
+    this.server.to(data.roomName).emit(event, data);
+  }
 }
