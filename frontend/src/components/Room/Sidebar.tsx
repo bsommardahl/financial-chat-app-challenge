@@ -1,5 +1,6 @@
 import { createStyles, makeStyles, Theme, Typography } from "@material-ui/core";
 import React from "react";
+import { User } from "../../types/User";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -23,17 +24,22 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const RoomSidebar = () => {
+interface Props {
+  users: User[];
+}
+
+const RoomSidebar = ({ users }: Props) => {
   const classes = useStyles();
-  const activeUsers: string[] = [];
 
   return (
     <div className={classes.root}>
       <Typography variant="h6" className={classes.title}>
         Active users
       </Typography>
-      {activeUsers.map((username) => (
-        <Typography className={classes.text}>{username}</Typography>
+      {users.map(({ username }, idx) => (
+        <Typography key={idx} className={classes.text}>
+          {username}
+        </Typography>
       ))}
     </div>
   );

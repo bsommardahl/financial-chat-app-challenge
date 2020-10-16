@@ -75,9 +75,9 @@ const Room = () => {
         </Typography>
       </Container>
       <div className={classes.chat}>
-        <RoomSidebar />
+        <RoomSidebar users={roomData.users} />
         <div className={classes.chatMain}>
-          <RoomMessages />
+          <RoomMessages messages={roomData.messages} />
           <MessageInput onSubmit={sendMessage} />
         </div>
       </div>

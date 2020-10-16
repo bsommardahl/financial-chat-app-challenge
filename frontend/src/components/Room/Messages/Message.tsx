@@ -31,7 +31,7 @@ const ChatMessage = ({ date, message, sender }: Props) => {
     hour: "numeric",
     minute: "numeric",
     second: "numeric",
-  }).format(date);
+  }).format(new Date(date));
 
   return (
     <div className={classes.root}>

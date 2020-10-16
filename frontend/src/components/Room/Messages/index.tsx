@@ -15,14 +15,22 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const RoomMessages = () => {
+interface Props {
+  messages: Message[];
+}
+
+const RoomMessages = ({ messages }: Props) => {
   const classes = useStyles();
-  const messages: Message[] = [];
 
   return (
     <div className={classes.messages}>
-      {messages.map(({ createdAt, message, username }) => (
-        <ChatMessage date={createdAt} message={message} sender={username} />
+      {messages.map(({ createdAt, message, username }, idx) => (
+        <ChatMessage
+          key={idx}
+          date={createdAt}
+          message={message}
+          sender={username}
+        />
       ))}
     </div>
   );
