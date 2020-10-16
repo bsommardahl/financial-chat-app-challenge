@@ -1,0 +1,57 @@
+version: "3.7"
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./frontend:/usr/src/app
+      - frontend_node_modules:/usr/src/app/node_modules
+      - .git:/usr/src/app/.git
+    links:
+      - backend
+    ports:
+      - "3000:3000"
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./backend:/usr/src/app
+      - backend_node_modules:/usr/src/app/node_modules
+      - .git:/usr/src/app/.git
+    ports:
+      - "5000:5000"
+    links:
+      - microservice
+      - rabbitmq
+  microservice:
+    build:
+      context: ./microservice
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./microservice:/usr/src/app
+      - microservice_node_modules:/usr/src/app/node_modules
+      - .git:/usr/src/app/.git
+    links:
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+
+volumes:
+  rabbitmqdata:
+  frontend_node_modules:
+  backend_node_modules:
+  microservice_node_modules:
+networks:
+  default:
+    external:
+      name: local_network
