@@ -1,27 +1,30 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
+import {
+  ClientProxyFactory,
+  ClientsModule,
+  Transport,
+} from '@nestjs/microservices';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AppConfigModule } from './config/config.module';
+import { AppConfigService } from './config/config.service';
 import { RoomModule } from './modules/room/room.module';
 
 @Module({
-  imports: [
-    RoomModule,
-    ClientsModule.register([
-      {
-        name: 'MESSAGE_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://rabbitmq:5672/messages'],
-          queue: 'messages_queue',
-          queueOptions: {
-            durable: false,
-          },
-        },
-      },
-    ]),
-  ],
+  imports: [RoomModule, AppConfigModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'MESSAGE_SERVICE',
+      useFactory: (configService: AppConfigService) => {
+        const options = configService.getRabbitmqOptions();
+        return ClientProxyFactory.create(options);
+      },
+
+      inject: [AppConfigService],
+    },
+  ],
 })
 export class AppModule {}
