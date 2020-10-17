@@ -1,30 +1,28 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import {
-  ClientProxyFactory,
-  ClientsModule,
-  Transport,
-} from '@nestjs/microservices';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppConfigModule } from './config/config.module';
-import { AppConfigService } from './config/config.service';
 import { RoomModule } from './modules/room/room.module';
+import { MessageProvider } from './modules/message/message';
+import { AppConfigService } from './config/config.service';
+import { MessageModule } from './modules/message/message.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
-  imports: [RoomModule, AppConfigModule],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: 'MESSAGE_SERVICE',
-      useFactory: (configService: AppConfigService) => {
-        const options = configService.getRabbitmqOptions();
-        return ClientProxyFactory.create(options);
-      },
-
+  imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [AppConfigModule],
       inject: [AppConfigService],
-    },
+      useFactory: (configService: AppConfigService) =>
+        configService.TypeOrmDatabase,
+    }),
+    AppConfigModule,
+    RoomModule,
+    MessageModule,
+    UserModule,
   ],
+  controllers: [AppController],
+  providers: [AppService, MessageProvider],
 })
 export class AppModule {}
