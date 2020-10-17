@@ -9,8 +9,8 @@ export class Message extends BaseEntity {
   message: string;
 
   @ManyToOne(
-    () => Message,
-    (message: Message) => message.user,
+    () => User,
+    (user: User) => user.messages,
   )
   user: User;
 
@@ -19,4 +19,12 @@ export class Message extends BaseEntity {
     (room: Room) => room.messages,
   )
   room: Room;
+
+  static create(message: string, user: User, room: Room) {
+    const entity = new Message();
+    entity.message = message;
+    entity.room = room;
+    entity.user = user;
+    return entity;
+  }
 }

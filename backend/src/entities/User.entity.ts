@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Message } from './Message.entity';
 import { Room } from './Room.entity';
@@ -8,18 +8,27 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 300, nullable: false, unique: true })
   socketId: string;
 
-  @Column({ type: 'varchar', length: 300, nullable: false, unique: true })
+  @Column({ type: 'varchar', length: 300, nullable: false })
   username: string;
 
-  @ManyToMany(
+  @ManyToOne(
     () => Room,
     (room: Room) => room.users,
   )
-  rooms: Room;
+  room: Room;
 
   @OneToMany(
     () => Message,
     (message: Message) => message.user,
   )
   messages: Message[];
+
+  static create(username: string, socketId: string, room: Room) {
+    const user = new User();
+    user.username = username;
+    user.socketId = socketId;
+    user.room = room;
+    user.messages = [];
+    return user;
+  }
 }
