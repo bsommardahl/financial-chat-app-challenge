@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev": "nodemon --config nodemon.json",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -18,7 +18,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migrations:generate": "npm run typeorm -- migration:generate -d src/migration -n",
+    "migrations:create": "npm run typeorm -- migration:create -d src/migration -n",
+    "migrations": "npm run typeorm -- migration:run"
   },
   "dependencies": {
     "@nestjs/common": "^7.0.0",
@@ -27,13 +31,16 @@
     "@nestjs/microservices": "^7.4.4",
     "@nestjs/platform-express": "^7.0.0",
     "@nestjs/platform-socket.io": "^7.4.4",
+    "@nestjs/typeorm": "^7.1.4",
     "@nestjs/websockets": "^7.4.4",
     "amqp-connection-manager": "^3.2.1",
     "amqplib": "^0.6.0",
     "joi": "^17.2.1",
+    "pg": "^8.4.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^6.5.4"
+    "rxjs": "^6.5.4",
+    "typeorm": "^0.2.28"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.0.0",
@@ -50,6 +57,7 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^2.20.1",
     "jest": "^25.1.0",
+    "nodemon": "^2.0.5",
     "prettier": "^1.19.1",
     "supertest": "^4.0.2",
     "ts-jest": "25.2.1",
