@@ -18,7 +18,6 @@ import { AppConfigService } from './config.service';
         RABBITMQ_PASSWORD: Joi.string().optional(),
         RABBITMQ_QUEUE_NAME: Joi.string().required(),
         TYPEORM_CONNECTION: Joi.string().default('postgres'),
-        TYPEORM_ENTITIES: Joi.string().required(),
         TYPEORM_USERNAME: Joi.string().required(),
         TYPEORM_PASSWORD: Joi.string().required(),
         TYPEORM_DATABASE: Joi.string().required(),
@@ -27,9 +26,6 @@ import { AppConfigService } from './config.service';
           .integer()
           .default(5432),
         TYPEORM_LOGGING: Joi.string().default('false'),
-        ROOT_DIR: Joi.string()
-          .valid('src', 'dist')
-          .default('src'),
       }),
     }),
   ],
