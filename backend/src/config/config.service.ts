@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientOptions, Transport } from '@nestjs/microservices';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 @Injectable()
 export class AppConfigService {
@@ -53,5 +54,28 @@ export class AppConfigService {
         },
       },
     };
+  }
+
+  get TypeOrmDatabase(): TypeOrmModuleOptions {
+    return {
+      type: this.configService.get<any>('db.connection'),
+      host: this.configService.get<string>('db.host'),
+      port: this.configService.get<number>('db.port'),
+      username: this.configService.get<string>('db.user'),
+      password: this.configService.get<string>('db.password'),
+      database: this.configService.get<string>('db.name'),
+      entities: [this.entitiesPath],
+      logging: this.configService.get<string>('db.logging') === 'true',
+      extra: { max: 4, min: 1 },
+      synchronize: false,
+    };
+  }
+
+  get entitiesPath(): string {
+    const entitiesPath = this.configService.get<string>('db.entities');
+    if (this.configService.get<string>('db.rootDir') === 'dist') {
+      return entitiesPath.replace('src', 'dist').replace('.ts', '.js');
+    }
+    return entitiesPath;
   }
 }
