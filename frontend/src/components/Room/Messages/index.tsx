@@ -28,7 +28,7 @@ const RoomMessages = ({ messages }: Props) => {
 
   return (
     <div className={classes.messages}>
-      {messages.map(({ createdAt, message, username }, idx) => (
+      {messages.map(({ createdAt, message, user: { username } }, idx) => (
         <ChatMessage
           key={idx}
           id={`message-${idx}`}
