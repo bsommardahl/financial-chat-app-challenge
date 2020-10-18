@@ -11,6 +11,7 @@ export class Message extends BaseEntity {
   @ManyToOne(
     () => User,
     (user: User) => user.messages,
+    { eager: true },
   )
   user: User;
 

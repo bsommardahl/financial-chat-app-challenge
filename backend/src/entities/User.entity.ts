@@ -11,6 +11,9 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 300, nullable: false })
   username: string;
 
+  @Column({ type: 'boolean', default: false })
+  isOnline: boolean;
+
   @ManyToOne(
     () => Room,
     (room: Room) => room.users,
@@ -28,6 +31,7 @@ export class User extends BaseEntity {
     user.username = username;
     user.socketId = socketId;
     user.room = room;
+    user.isOnline = true;
     user.messages = [];
     return user;
   }
