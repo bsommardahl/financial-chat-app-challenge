@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientOptions, Transport } from '@nestjs/microservices';
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as path from 'path';
 
 @Injectable()
 export class AppConfigService {
@@ -30,16 +28,16 @@ export class AppConfigService {
     return this.configService.get<string>('app.rabbitmqPassword');
   }
 
-  get rabbitmqQueueName(): string {
-    return this.configService.get<string>('app.rabbitmqQueueName');
-  }
-
   get rabbitmqUserAndPassword(): string {
     let userAndPassword = '';
     if (this.rabbitmqUser && this.rabbitmqPassword) {
       userAndPassword = `${this.rabbitmqUser}:${this.rabbitmqPassword}@`;
     }
     return userAndPassword;
+  }
+
+  get rabbitmqResponseQueueName(): string {
+    return this.configService.get<string>('app.rabbitmqResponseQueueName');
   }
 
   getRabbitmqOptions(): ClientOptions {
@@ -49,26 +47,11 @@ export class AppConfigService {
       transport: Transport.RMQ,
       options: {
         urls: [url],
-        queue: this.rabbitmqQueueName,
+        queue: this.rabbitmqResponseQueueName,
         queueOptions: {
           durable: false,
         },
       },
-    };
-  }
-
-  get TypeOrmDatabase(): TypeOrmModuleOptions {
-    return {
-      type: this.configService.get<any>('db.connection'),
-      host: this.configService.get<string>('db.host'),
-      port: this.configService.get<number>('db.port'),
-      username: this.configService.get<string>('db.user'),
-      password: this.configService.get<string>('db.password'),
-      database: this.configService.get<string>('db.name'),
-      entities: [path.resolve(__dirname, '..', 'entities', '*.entity.js')],
-      logging: this.configService.get<string>('db.logging') === 'true',
-      extra: { max: 4, min: 1 },
-      synchronize: false,
     };
   }
 }

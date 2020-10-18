@@ -7,14 +7,5 @@ export const appConfig = registerAs('app', () => ({
   rabbitmqUser: process.env.RABBITMQ_USER,
   rabbitmqPassword: process.env.RABBITMQ_PASSWORD,
   rabbitmqQueueName: process.env.RABBITMQ_QUEUE_NAME,
-}));
-
-export const dbConfig = registerAs('db', () => ({
-  connection: process.env.TYPEORM_CONNECTION,
-  user: process.env.TYPEORM_USERNAME,
-  password: process.env.TYPEORM_PASSWORD,
-  name: process.env.TYPEORM_DATABASE,
-  host: process.env.TYPEORM_HOST,
-  port: process.env.TYPEORM_PORT,
-  logging: process.env.TYPEORM_LOGGING,
+  rabbitmqResponseQueueName: process.env.RABBITMQ_RESPONSE_QUEUE_NAME,
 }));
