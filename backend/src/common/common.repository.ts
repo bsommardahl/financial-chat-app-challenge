@@ -64,6 +64,10 @@ export class CommonRepository<TEntity> {
     return await this.repository.findOneOrFail(paramOne);
   }
 
+  public async saveMany(entities: TEntity[]): Promise<TEntity[]> {
+    return await this.repository.save(entities);
+  }
+
   public async save(entity: TEntity): Promise<TEntity> {
     return await this.repository.save(entity);
   }
