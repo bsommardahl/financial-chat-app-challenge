@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppModule } from './modules/app/app.module';
+import { CustomLogger } from './modules/logger/CustomLogger';
 
 const getMicroserviceOptions = (): MicroserviceOptions => {
   let userAndPassword = '';
@@ -32,6 +33,8 @@ async function bootstrap() {
     AppModule,
     options,
   );
-  await app.listen(() => console.log('Microservice is listening'));
+  const logger = new CustomLogger();
+  app.useLogger(logger);
+  await app.listen(() => logger.log('Microservice is listening', 'Main'));
 }
 bootstrap();
