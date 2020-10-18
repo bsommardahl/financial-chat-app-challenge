@@ -1,6 +1,5 @@
-export interface NewMessage {
+export class NewMessageRequest {
   roomName: string;
   message: string;
   username: string;
-  socketId: string;
 }
