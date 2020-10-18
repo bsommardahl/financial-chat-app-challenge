@@ -1,33 +1,48 @@
+import { Controller, Inject } from '@nestjs/common';
+import { ClientProxy, EventPattern } from '@nestjs/microservices';
 import {
   ConnectedSocket,
   MessageBody,
-  OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Room } from '../../entities/Room.entity';
-import { NewMessage } from './dtos/NewMessage.dto';
+import { CustomLogger } from '../logger/CustomLogger';
+import { SocketService } from '../socket/socket.service';
+import { ConnectUserDto } from './dtos/connecUser.dto';
 import { UserConnected } from './dtos/UserConnected.dto';
-import { UserDisconnected } from './dtos/UserDisconnected.dto';
 import { RoomService } from './room.service';
+import { NewMessageRequest } from './dtos/NewMessageRequest.dto';
+import { StockCodeRequest } from './dtos/stockCodeRequest.dto';
 
 @WebSocketGateway()
-export class RoomGateway implements OnGatewayDisconnect {
+export class RoomGateway implements OnGatewayInit, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-  constructor(private readonly roomService: RoomService) {}
+  constructor(
+    @Inject('MESSAGE_SERVICE') private readonly messageService: ClientProxy,
+    private readonly socketService: SocketService,
+    private readonly roomService: RoomService,
+    private readonly logger: CustomLogger,
+  ) {
+    this.logger.setContext('RoomGateway');
+  }
 
-  handleDisconnect(client: Socket) {
-    console.log('Client Disconnected', client.id);
+  afterInit(server: Server) {
+    this.socketService.socket = server;
+  }
 
-    const data = this.roomService.disconnectUser(client.id);
+  async handleDisconnect(client: Socket) {
+    this.logger.log(`Client Disconnected ${client.id}`);
+
+    const data = await this.roomService.disconnectUser(client.id);
     const event = 'room-data';
 
-    this.server.to(data.roomName).emit(event, data);
+    client.broadcast.to(data.roomName).emit(event, data);
   }
 
   @SubscribeMessage('hello')
@@ -37,19 +52,20 @@ export class RoomGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage('user-connected')
-  handleUserConnected(
+  async handleUserConnected(
     @MessageBody() { roomName, username }: UserConnected,
     @ConnectedSocket() client: Socket,
-  ): WsResponse<Room> {
-    console.log('User connected', { roomName, username });
+  ) {
+    const connectedUser: ConnectUserDto = {
+      roomName,
+      username,
+      socketId: client.id,
+    };
+    this.logger.logWithData('User connected', connectedUser);
 
     client.join(roomName);
 
-    const data = this.roomService.connectUser({
-      socketId: client.id,
-      username,
-      roomName,
-    });
+    const data = await this.roomService.connectUser(connectedUser);
     const event = 'room-data';
 
     client.broadcast.to(roomName).emit(event, data);
@@ -57,8 +73,11 @@ export class RoomGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage('new-message')
-  handleNewMessage(@MessageBody() newMessagePayload: NewMessage): void {
-    console.log('Message received', newMessagePayload);
+  async handleNewMessage(
+    @MessageBody() newMessagePayload: NewMessageRequest,
+    @ConnectedSocket() client: Socket,
+  ): Promise<void> {
+    this.logger.logWithData('Message received', newMessagePayload);
 
     const { message } = newMessagePayload;
     let addStockCodeMessage = false;
@@ -66,10 +85,20 @@ export class RoomGateway implements OnGatewayDisconnect {
     if (message.startsWith('/stock=')) {
       addStockCodeMessage = true;
       stockCode = message.split('/stock=')[1];
+
+      this.messageService
+        .emit<unknown, StockCodeRequest>('stock-code', {
+          stockCode,
+          roomName: newMessagePayload.roomName,
+        })
+        .subscribe({
+          error: error =>
+            this.logger.logWithData('Error sending stock code request', error),
+        });
     }
 
-    const data = this.roomService.addNewMessage(
-      newMessagePayload,
+    const data = await this.roomService.addNewMessage(
+      { ...newMessagePayload, socketId: client.id },
       addStockCodeMessage,
       stockCode,
     );

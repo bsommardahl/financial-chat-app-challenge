@@ -4,15 +4,29 @@ import { EntityManager } from 'typeorm';
 import { CommonRepository } from '../../common/common.repository';
 import { User } from '../../entities/User.entity';
 import { Room } from '../../entities/Room.entity';
+import { CustomLogger } from '../logger/CustomLogger';
 
 @Injectable()
 export class RoomRepository extends CommonRepository<Room> {
-  constructor(@InjectEntityManager() manager: EntityManager) {
+  constructor(
+    @InjectEntityManager() manager: EntityManager,
+    private readonly logger: CustomLogger,
+  ) {
     super(manager.getRepository(Room));
+    this.logger.setContext('RoomRepository');
   }
 
-  getRoomByName(roomName: string) {
+  async findRoomByName(roomName: string) {
     return this.findOne({ roomName });
+  }
+
+  async findByNameOrCreate(roomName: string): Promise<Room> {
+    let room = await this.findRoomByName(roomName);
+    if (!room) {
+      this.logger.log('Room Created');
+      room = await this.save(Room.create(roomName));
+    }
+    return room;
   }
 
   async isUserInRoom(user: User): Promise<boolean> {

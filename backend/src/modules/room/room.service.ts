@@ -2,105 +2,96 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../../entities/User.entity';
 import { Room } from '../../entities/Room.entity';
 import { NewMessage } from './dtos/NewMessage.dto';
+import { ConnectUserDto } from './dtos/connecUser.dto';
+import { RoomRepository } from './room.repository';
+import { UserRepository } from '../user/user.repository';
+import { Message } from '../../entities/Message.entity';
+import { MessageRepository } from '../message/message.repository';
+import { CustomLogger } from '../logger/CustomLogger';
 
-const RETURN_FIRST_N_MESSAGES = 50;
+export const RETURN_FIRST_N_MESSAGES = 50;
 
 @Injectable()
 export class RoomService {
-  rooms: Record<string, Room> = {};
-  users: User[] = [];
+  constructor(
+    private readonly roomRepository: RoomRepository,
+    private readonly userRepository: UserRepository,
+    private readonly messageRepository: MessageRepository,
+    private readonly logger: CustomLogger,
+  ) {
+    this.logger.setContext('RoomService');
+  }
 
-  connectUser(connectedUser: User): Room {
+  async connectUser(connectedUser: ConnectUserDto): Promise<Room> {
     const { roomName, username, socketId } = connectedUser;
-    const room = this.getRoom(roomName);
-    if (
-      !this.users.find(
-        user => user.username === 'Admin' && user.roomName === roomName,
-      )
-    ) {
-      this.users.push({ socketId: 'admin', username: 'Admin', roomName });
-    }
-    if (
-      !this.users.find(
-        user =>
-          user.username === username &&
-          user.roomName === roomName &&
-          user.socketId === socketId,
-      )
-    ) {
-      this.users.push(connectedUser);
-    }
+    const room = await this.roomRepository.findByNameOrCreate(roomName);
 
-    room.messages.push({
-      username: 'Admin',
-      message: `Welcome to the room ${username}`,
-      createdAt: new Date(),
-    });
+    const adminUser = await this.userRepository.getOrCreateAdminUser(room);
+    await this.userRepository.save(User.create(username, socketId, room));
 
-    return this.makeData(roomName, room);
-  }
-
-  disconnectUser(socketId: string): Room {
-    const { username, roomName } = this.users.find(
-      user => user.socketId === socketId,
+    await this.messageRepository.save(
+      Message.create(`Welcome to the room ${username}`, adminUser, room),
     );
-    const room = this.getRoom(roomName);
-    room.messages.push({
-      username: 'Admin',
-      message: `User ${username} has left the room.`,
-      createdAt: new Date(),
-    });
 
-    this.users = this.users.filter(user => user.socketId !== socketId);
-
-    return this.makeData(roomName, room);
+    return await this.makeData(room.roomName);
   }
 
-  addNewMessage(
-    { message, roomName, username }: NewMessage,
+  async disconnectUser(socketId: string): Promise<Room> {
+    const user = await this.userRepository.findOneOrFail({
+      where: { socketId },
+      relations: ['room'],
+    });
+    const { username, room } = user;
+    const adminUser = await this.userRepository.getOrCreateAdminUser(room);
+    user.isOnline = false;
+    await this.userRepository.save(user);
+    this.logger.log('User removed');
+    await this.messageRepository.save(
+      Message.create(`User ${username} has left the room.`, adminUser, room),
+    );
+
+    return await this.makeData(room.roomName);
+  }
+
+  async addNewMessage(
+    { message, roomName, username, socketId }: NewMessage,
     addStockMessage = false,
     stockCode = '',
-  ) {
-    const room = this.getRoom(roomName);
+  ): Promise<Room> {
+    const room = await this.roomRepository.findRoomByName(roomName);
+    const adminUser = await this.userRepository.getOrCreateAdminUser(room);
+    const messagesToCreate: Message[] = [];
+
     if (addStockMessage) {
-      room.messages.push({
-        createdAt: new Date(),
-        message: `Handling stock code: '${stockCode}'`,
-        username: 'Admin',
-      });
+      messagesToCreate.push(
+        Message.create(`Handling stock code: '${stockCode}'`, adminUser, room),
+      );
     }
-    room.messages.push({ createdAt: new Date(), message, username });
+    const user = await this.userRepository.findByUsernameOrCreate(
+      username,
+      socketId,
+      room,
+    );
+    messagesToCreate.push(Message.create(message, user, room));
 
-    return this.makeData(roomName, room);
+    await this.messageRepository.saveMany(messagesToCreate);
+    this.logger.log('Messages created');
+
+    return await this.makeData(roomName);
   }
 
-  getRoomData(roomName: string): Room {
-    return this.getRoom(roomName);
-  }
-
-  private getDefaultRoom(roomName: string): Room {
-    return {
-      roomName,
-      messages: [],
-      users: [],
-    };
-  }
-
-  private getRoom(roomName: string): Room {
-    if (!this.rooms[roomName])
-      this.rooms[roomName] = this.getDefaultRoom(roomName);
-    return this.rooms[roomName];
-  }
-
-  private makeData(roomName: string, room: Room): Room {
-    const usersInRoom = this.users.filter(user => user.roomName === roomName);
+  public async makeData(
+    roomName: string,
+    messageCount = RETURN_FIRST_N_MESSAGES,
+  ): Promise<Room> {
+    const room = await this.roomRepository.findRoomByName(roomName);
     const sortedMessages = room.messages.sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     );
     return {
       ...room,
-      messages: sortedMessages.slice(0, RETURN_FIRST_N_MESSAGES).reverse(),
-      users: usersInRoom,
+      users: room.users.filter(user => user.isOnline),
+      messages: sortedMessages.slice(0, messageCount).reverse(),
     };
   }
 }
