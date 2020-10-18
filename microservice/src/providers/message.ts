@@ -1,6 +1,6 @@
 import { Provider } from '@nestjs/common';
 import { ClientProxyFactory } from '@nestjs/microservices';
-import { AppConfigService } from '../../config/config.service';
+import { AppConfigService } from '../modules/config/config.service';
 
 export const MessageProvider: Provider = {
   provide: 'MESSAGE_SERVICE',
@@ -8,6 +8,5 @@ export const MessageProvider: Provider = {
     const options = configService.getRabbitmqOptions();
     return ClientProxyFactory.create(options);
   },
-
   inject: [AppConfigService],
 };
