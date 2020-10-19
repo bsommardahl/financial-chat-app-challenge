@@ -1,8 +1,8 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
-import { Message } from 'src/entities/Message.entity';
-import { Room } from 'src/entities/Room.entity';
-import { User } from 'src/entities/User.entity';
+import { Message } from '../../entities/Message.entity';
+import { Room } from '../../entities/Room.entity';
+import { User } from '../../entities/User.entity';
 import { CustomLogger } from '../logger/CustomLogger';
 import { SocketService } from '../socket/socket.service';
 import { RoomService, RETURN_FIRST_N_MESSAGES } from './room.service';

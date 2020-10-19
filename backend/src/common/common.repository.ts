@@ -37,7 +37,8 @@ export class CommonRepository<TEntity> {
     options?: FindOneOptions<TEntity>,
   ): Promise<TEntity | undefined> {
     if (typeof paramOne === 'number') {
-      return await this.repository.findOne(paramOne, options);
+      if (options) return await this.repository.findOne(paramOne, options);
+      return await this.repository.findOne(paramOne);
     }
     return await this.repository.findOne(paramOne);
   }
@@ -59,7 +60,9 @@ export class CommonRepository<TEntity> {
     options?: FindOneOptions<TEntity>,
   ): Promise<TEntity> {
     if (typeof paramOne === 'number') {
-      return await this.repository.findOneOrFail(paramOne, options);
+      if (options)
+        return await this.repository.findOneOrFail(paramOne, options);
+      return await this.repository.findOneOrFail(paramOne);
     }
     return await this.repository.findOneOrFail(paramOne);
   }
