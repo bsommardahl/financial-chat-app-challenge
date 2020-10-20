@@ -12,10 +12,11 @@ export class AppService {
 
   async handleResponse(csv: string, roomName: string, stockCode: string) {
     return this.getParsedData(csv).then(parsedData => {
+      this.logger.logWithData('parsedData', parsedData);
       let message = `No quote for ${stockCode}`;
 
       if (parsedData.records.length !== 0) {
-        const { Volume: perShare, Symbol } = parsedData.records[0];
+        const { Close: perShare, Symbol } = parsedData.records[0];
         if (perShare !== 'N/D') {
           const parsedPerShare = parseFloat(perShare);
           message = `${Symbol} quote is $${parsedPerShare} per share`;
