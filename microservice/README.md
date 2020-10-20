@@ -26,7 +26,7 @@
 
 ## Description
 
-Microservice project in charge of consume and produce messages from and to the message broker (**_Rabbitmq_**).
+Microservice project in charge of consuming and producing messages from and to the message broker (**_RabbitMQ_**).
 
 Messages include stock quote requests, furthermore, this microservice calls a foreign [API](https://stooq.com/q/l/?f=sd2t2ohlcv&h&e=csv&s=<stock_code>), parses the CSV received and sends it to the queue.
 

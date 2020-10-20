@@ -30,7 +30,7 @@
 
 Backend project, using Socket.io, to serve a websocket gateway for the financial chat app.
 
-In charge of handling and storing users connecting/disconnecting to different chat rooms and exchanging messages. Handling ad-hoc stocks quote requests and delegating it to a separate service using **_Rabbitmq_** as a message broker. Further, consuming the response message and sending it to the chat users.
+In charge of handling and storing users connecting/disconnecting to different chat rooms and exchanging messages. Handling on demand stocks quote requests and delegating it to a separate service using **_RabbitMQ_** as a message broker. Further, consuming the response message and sending it to the chat users.
 
 ## Installation
 
