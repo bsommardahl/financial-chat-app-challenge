@@ -24,7 +24,7 @@ This repository, written using Typescript, contains a React application that con
 
 Each project has their own set of descriptions as well as instructions to run them.
 
-- [Frontend Description and Instructions](frontend/Readme.md)
+- [Frontend Description and Instructions](./frontend/Readme.md)
 - [Backend Description and Instructions](backend/Readme.md)
 - [Microservice Description and Instructions](Microservice/Readme.md)
 
